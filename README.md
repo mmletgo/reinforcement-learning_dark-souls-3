@@ -1,5 +1,7 @@
 # CS5446_project-reinforcement-learning_dark-souls-3
 
+![image](/img/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%8E%A9%E9%BB%91%E6%9A%97%E4%B9%8B%E9%AD%823.png)
+
 ### directkeys
 
     - 动作键位映射
