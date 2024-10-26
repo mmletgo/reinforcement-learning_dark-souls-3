@@ -2,6 +2,8 @@
 import ctypes
 import time
 
+from bokeh.events import Press
+
 SendInput = ctypes.windll.user32.SendInput
 
 W = 0x11
@@ -13,6 +15,8 @@ M = 0x32
 J = 0x24
 K = 0x25
 LSHIFT = 0x2A
+LALT = 0x38
+SPACE = 0x39
 R = 0x13  # 用R代替识破
 V = 0x2F
 
@@ -27,6 +31,9 @@ up = 0xC8
 down = 0xD0
 left = 0xCB
 right = 0xCD
+
+mouse_left = [0x0002, 0x0004]
+mouse_right = [0x0008, 0x0010]
 
 esc = 0x01
 
@@ -58,8 +65,33 @@ class Input_I(ctypes.Union):
 class Input(ctypes.Structure):
     _fields_ = [("type", ctypes.c_ulong), ("ii", Input_I)]
 
+class POINT(ctypes.Structure):
+    _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
+
+
 
 # Actuals Functions
+
+def get_mouse_position():
+    pt = POINT()
+    ctypes.windll.user32.GetCursorPos(ctypes.byref(pt))
+    return pt.x, pt.y
+
+def get_screen_center():
+    user32 = ctypes.windll.user32
+    screen_width = user32.GetSystemMetrics(0)
+    screen_height = user32.GetSystemMetrics(1)
+    center_x = screen_width // 2
+    center_y = screen_height // 2
+    return center_x, center_y
+
+def ClickMouse(mouseCode):
+    x, y = get_mouse_position()
+    extra = ctypes.c_ulong(0)
+    ii_ = Input_I()
+    ii_.mi = MouseInput(x, y, 0, mouseCode, 0, ctypes.pointer(extra))
+    x = Input(ctypes.c_ulong(1), ii_)
+    ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
 
 def PressKey(hexKeyCode):
@@ -78,6 +110,77 @@ def ReleaseKey(hexKeyCode):
     x = Input(ctypes.c_ulong(1), ii_)
     ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
+
+def shield():
+    ClickMouse(mouse_right[0])
+    time.sleep(0.5)
+    ClickMouse(mouse_right[1])
+
+def shield_heavy():
+    PressKey(LSHIFT)
+    time.sleep(0.1)
+    ClickMouse(mouse_right[0])
+    time.sleep(0.1)
+    ClickMouse(mouse_right[1])
+    ReleaseKey(LSHIFT)
+
+def sword_light():
+    ClickMouse(mouse_left[0])
+    time.sleep(0.1)
+    ClickMouse(mouse_left[1])
+
+def sword_heavy():
+    PressKey(LSHIFT)
+    time.sleep(0.1)
+    ClickMouse(mouse_left[0])
+    time.sleep(0.1)
+    ClickMouse(mouse_left[1])
+    ReleaseKey(LSHIFT)
+
+def jump_backward():
+    PressKey(SPACE)
+    time.sleep(0.1)
+    ReleaseKey(SPACE)
+
+def jump_forward():
+    PressKey(W)
+    time.sleep(0.1)
+    PressKey(SPACE)
+    time.sleep(0.1)
+    ReleaseKey(SPACE)
+    ReleaseKey(W)
+
+def jump_left():
+    PressKey(A)
+    time.sleep(0.1)
+    PressKey(SPACE)
+    time.sleep(0.1)
+    ReleaseKey(SPACE)
+    ReleaseKey(A)
+
+def jump_right():
+    PressKey(D)
+    time.sleep(0.1)
+    PressKey(SPACE)
+    time.sleep(0.1)
+    ReleaseKey(SPACE)
+    ReleaseKey(D)
+
+def use_item():
+    PressKey(R)
+    time.sleep(0.1)
+    ReleaseKey(R)
+
+def lock_target():
+    PressKey(Q)
+    time.sleep(0.1)
+    ReleaseKey(Q)
+
+def move_mouse_to_boss(bx, by):
+    center_x, center_y = get_screen_center()
+    dx = bx - center_x
+    dy = by - center_y
+    ctypes.windll.user32.mouse_event(0x0001, dx, dy, 0, 0)
 
 def defense():
     PressKey(M)
