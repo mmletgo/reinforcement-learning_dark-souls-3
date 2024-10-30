@@ -31,28 +31,53 @@ def pause_game(paused):
     return paused
 
 
-# calculate self blood
-# TODO: need to be modified
-def self_blood_count(self_gray):
+
+###################################################################################################################
+def self_blood_count(color_image, red_self_blood_threshold=80,green_self_blood_threshold = 80,blue_self_blood_threshold =80 ):
     self_blood = 0
-    for self_bd_num in self_gray[469]:
-        # self blood gray pixel 80~98
-        if self_bd_num > 90 and self_bd_num < 98:
+    for pixel in color_image[4]:
+        red_value = pixel[2]
+        green_value = pixel[1]
+        blue_value = pixel[0]
+        if red_value > red_self_blood_threshold and green_value < green_self_blood_threshold and blue_value < green_self_blood_threshold:
             self_blood += 1
-    return self_blood
 
+    total_pixels = color_image.shape[1]
+    health_percentage = (self_blood / total_pixels) * 100
 
-# calculate boss blood
-# TODO: need to be modified
-def boss_blood_count(boss_gray):
-    boss_blood = 0
-    for boss_bd_num in boss_gray[0]:
-        # boss blood gray pixel 65~75
-        if boss_bd_num > 65 and boss_bd_num < 75:
-            boss_blood += 1
-    return boss_blood
+    return health_percentage
 
+def boss_blood_count(color_image, red_boss_blood_threshold=70, self_stamina_green=30, self_stamina_blue=30):
+    self_blood = 0
+    for pixel in color_image[4]:
+        red_value = pixel[2]
+        green_value = pixel[1]
+        blue_value = pixel[0]
 
+        if red_value > red_boss_blood_threshold and green_value < self_stamina_green and blue_value < self_stamina_blue:
+            self_blood += 1
+
+    total_pixels = color_image.shape[1]
+    health_percentage = (self_blood / total_pixels) * 100
+
+    return health_percentage
+
+def self_stamina_count(color_image, self_stamina_red=80, self_stamina_green=110, self_stamina_blue=80):
+    self_blood = 0
+    for pixel in color_image[4]:
+        red_value = pixel[2]
+        green_value = pixel[1]
+        blue_value = pixel[0]
+
+        if red_value > self_stamina_red and green_value > self_stamina_green and blue_value > self_stamina_blue:
+            self_blood += 1
+
+    total_pixels = color_image.shape[1]
+    health_percentage = (self_blood / total_pixels) * 100
+
+    return health_percentage
+
+#############################################################################################################################
 # TODO: need to be modified
 def take_action(action):
     if action == 0:  # n_choose

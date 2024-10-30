@@ -5,9 +5,9 @@ import cv2
 import time
 from model import DQN
 from restart import restart
-from utility import pause_game, self_blood_count, boss_blood_count, take_action
+from utility import pause_game, self_blood_count, boss_blood_count,self_stamina_count, take_action
 from reward_fc import action_judge
-from setting import DQN_model_path, DQN_log_path, WIDTH, HEIGHT, window_size, blood_window, action_size, paused
+from setting import DQN_model_path, DQN_log_path, WIDTH, HEIGHT, window_size, self_blood_window,boss_blood_window,self_stamina_window, action_size, paused
 
 EPISODES = 3000
 big_BATCH_SIZE = 16
