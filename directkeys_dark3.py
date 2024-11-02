@@ -232,9 +232,9 @@ def test_controls():
     try:
         for action_func, action_name in test_sequences:
             test_action(action_func, action_name)
-            # response = input(f"{action_name} 测试完成。按Enter继续下一个测试，输入'q'退出: ")
-            # if response.lower() == 'q':
-            #     break
+            response = input(f"{action_name} 测试完成。按Enter继续下一个测试，输入'q'退出: ")
+            if response.lower() == 'q':
+                break
                 
     except KeyboardInterrupt:
         print("\n测试被用户中断")

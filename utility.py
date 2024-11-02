@@ -31,9 +31,11 @@ def pause_game(paused):
     return paused
 
 
-
 ###################################################################################################################
-def self_blood_count(color_image, red_self_blood_threshold=80,green_self_blood_threshold = 80,blue_self_blood_threshold =80 ):
+def self_blood_count(color_image,
+                     red_self_blood_threshold=80,
+                     green_self_blood_threshold=80,
+                     blue_self_blood_threshold=80):
     self_blood = 0
     for pixel in color_image[4]:
         red_value = pixel[2]
@@ -47,7 +49,11 @@ def self_blood_count(color_image, red_self_blood_threshold=80,green_self_blood_t
 
     return health_percentage
 
-def boss_blood_count(color_image, red_boss_blood_threshold=70, self_stamina_green=30, self_stamina_blue=30):
+
+def boss_blood_count(color_image,
+                     red_boss_blood_threshold=70,
+                     self_stamina_green=30,
+                     self_stamina_blue=30):
     self_blood = 0
     for pixel in color_image[4]:
         red_value = pixel[2]
@@ -62,7 +68,11 @@ def boss_blood_count(color_image, red_boss_blood_threshold=70, self_stamina_gree
 
     return health_percentage
 
-def self_stamina_count(color_image, self_stamina_red=80, self_stamina_green=110, self_stamina_blue=80):
+
+def self_stamina_count(color_image,
+                       self_stamina_red=80,
+                       self_stamina_green=110,
+                       self_stamina_blue=80):
     self_blood = 0
     for pixel in color_image[4]:
         red_value = pixel[2]
@@ -77,16 +87,35 @@ def self_stamina_count(color_image, self_stamina_red=80, self_stamina_green=110,
 
     return health_percentage
 
+
 #############################################################################################################################
 # TODO: need to be modified
 def take_action(action):
     if action == 0:  # n_choose
         pass
-    elif action == 1:  # j
-        directkeys.attack()
-    elif action == 2:  # k
-        directkeys.jump()
-    elif action == 3:  # m
-        directkeys.defense()
-    elif action == 4:  # r
-        directkeys.dodge()
+    elif action == 1:  # 左击
+        directkeys.left_click()
+    elif action == 2:  # 右击（盾）
+        directkeys.right_click()
+    elif action == 3:  # 重击
+        directkeys.heavy_attack_left()
+    elif action == 4:  # r喝药
+        directkeys.use_item()
+    elif action == 5:  # 向后闪避，没加翻滚
+        directkeys.sprint_jump_roll()
+    elif action == 6:  # 往前走w
+        directkeys.run_forward()
+        time.sleep(1)
+        directkeys.stop_forward()
+    elif action == 7:  # 往后走s
+        directkeys.run_backward()
+        time.sleep(1)
+        directkeys.stop_backward()
+    elif action == 8:  # 往左走a
+        directkeys.run_left()
+        time.sleep(1)
+        directkeys.stop_left()
+    elif action == 9:  # 往右走d
+        directkeys.run_right()
+        time.sleep(1)
+        directkeys.stop_right()
