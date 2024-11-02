@@ -34,7 +34,7 @@ def pause_game(paused):
 
 
 ###################################################################################################################
-'''
+
 def self_blood_count(color_image, red_self_blood_threshold=80,green_self_blood_threshold = 80,blue_self_blood_threshold =80 ):
     self_blood = 0
     for pixel in color_image[4]:
@@ -78,7 +78,7 @@ def self_stamina_count(color_image, self_stamina_red=80, self_stamina_green=110,
     health_percentage = (self_blood / total_pixels) * 100
 
     return health_percentage
-'''
+
 '''
 def self_blood_count(color_image, red_self_blood_threshold=80, green_self_blood_threshold=80, blue_self_blood_threshold=80):
     try:
