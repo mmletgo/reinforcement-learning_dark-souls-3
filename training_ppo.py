@@ -40,7 +40,11 @@ if __name__ == '__main__':
         while True:
             last_time = time.time()
             # get the action by state
-            action, logprob = agent.Choose_Action(status)
+            try:
+                action, logprob = agent.Choose_Action(status)
+            except:
+                print("Choose_Action error")
+                break
             newgame.take_action(action)
             # take station then the station change
             next_status, next_self_blood, next_self_stamina, next_boss_blood = newgame.get_status_info(
@@ -51,18 +55,17 @@ if __name__ == '__main__':
             # print(self_blood, next_self_blood, self_stamina, next_self_stamina,
             #       boss_blood, next_boss_blood, stop, emergence_break)
             # get action reward+we
-            print(
-                'loop took {} s, action {}, self_blood {}, next_self_blood {}, boss_blood {}, next_boss_blood {}, reward {}, done {}'
-                .format(time.time() - last_time, newgame.action_dict[action],
-                        self_blood, next_self_blood, boss_blood,
-                        next_boss_blood, reward, done))
+            elapsed_time = time.time() - last_time
+            if action != 0:
+                print(
+                    f'loop took {elapsed_time:.2f} s, action {newgame.action_dict[action]}, self_blood {self_blood}, next_self_blood {next_self_blood}, boss_blood {boss_blood}, next_boss_blood {next_boss_blood}, reward {reward}, done {done}'
+                )
             if emergence_break == 100:
                 # emergence break , save model and paused
                 # 遇到紧急情况，保存数据，并且暂停
                 print("emergence_break")
                 if episode > 10:
                     agent.save_model(f'ppo_model_{episode}.pth')
-                newgame.restart()
                 break
                 # paused = True
 
@@ -74,7 +77,10 @@ if __name__ == '__main__':
             total_reward += reward
             paused = pause_game(paused)
             if done == 1:
-                agent.update()
+                try:
+                    agent.update()
+                except:
+                    print("update error")
                 agent.clear_memory()
                 newgame.reset()
                 print(f'episode: {episode}, Reward:{total_reward}')
