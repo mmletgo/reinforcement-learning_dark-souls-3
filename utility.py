@@ -40,6 +40,21 @@ class gamestatus:
     def __init__(self):
         self.self_blood = 0
         self.boss_blood = 0
+        self.action_dict = {
+            0: "nothing",
+            1: "left_click",
+            2: "right_click",
+            3: "heavy_attack_left",
+            4: "sprint_jump_roll",
+            5: "run_forward",
+            6: "run_backward",
+            7: "run_left",
+            8: "run_right",
+            9: "run_forward_roll",
+            10: "run_backward_roll",
+            11: "run_left_roll",
+            12: "run_right_roll"
+        }
 
     def reset(self):
         self.self_blood = 0
@@ -62,9 +77,9 @@ class gamestatus:
 
     def boss_blood_count(self,
                          color_image,
-                         red_boss_blood_threshold=45,
-                         green_boss_blood_threshold=15,
-                         blue_boss_blood_threshold=15):
+                         red_boss_blood_threshold=80,
+                         green_boss_blood_threshold=45,
+                         blue_boss_blood_threshold=45):
         boss_blood = 0
         average_color = np.mean(color_image, axis=0)
         for pixel in average_color:
@@ -93,58 +108,63 @@ class gamestatus:
         return self_stamina
 
     def get_status_info(self):
-        screen_image = cv2.cvtColor(grab_screen(window_size),
-                                    cv2.COLOR_BGR2RGB)
-
-        self_screen_color = screen_image[
+        screen_image = grab_screen(window_size)
+        screen_image_rgb = cv2.cvtColor(screen_image, cv2.COLOR_BGRA2RGB)
+        self_screen_color = screen_image_rgb[
             self_blood_window[1]:self_blood_window[3],
             self_blood_window[0]:self_blood_window[2]]
-        boss_screen_color = screen_image[
+        boss_screen_color = screen_image_rgb[
             boss_blood_window[1]:boss_blood_window[3],
             boss_blood_window[0]:boss_blood_window[2]]
-        stamina_screen_color = screen_image[
+        stamina_screen_color = screen_image_rgb[
             self_stamina_window[1]:self_stamina_window[3],
             self_stamina_window[0]:self_stamina_window[2]]
+        boss_blood = self.boss_blood_count(boss_screen_color)
+        if (boss_blood <= self.boss_blood and self.boss_blood - boss_blood
+                < 100) or self.boss_blood == 0 or boss_blood == 0:
+            # if self.boss_blood - boss_blood > 100 and boss_blood > 100 and self.boss_blood > 50:
+            #     # cv2.imwrite("great_attack.png",
+            #     #             cv2.cvtColor(boss_screen_color, cv2.COLOR_RGB2BGR))
+            #     cv2.imwrite("great_attack.png", screen_image)
+            #     np.save("great_attack.npy", screen_image_rgb)
+            self.boss_blood = boss_blood
         # 计算血量和体力值
         self_blood = self.self_blood_count(self_screen_color)
-        if self_blood <= self.self_blood or self.self_blood == 0:
+        if self_blood <= self.self_blood or self.self_blood == 0 or self.boss_blood == 0:
             self.self_blood = self_blood
-        boss_blood = self.boss_blood_count(boss_screen_color)
-        if boss_blood <= self.boss_blood or self.boss_blood == 0:
-            self.boss_blood = boss_blood
         self_stamina = self.self_stamina_count(stamina_screen_color)
-        screen_gray = cv2.cvtColor(screen_image, cv2.COLOR_RGB2GRAY)
+        screen_gray = cv2.cvtColor(screen_image_rgb, cv2.COLOR_RGB2GRAY)
         status = cv2.resize(screen_gray, (WIDTH, HEIGHT))
         status = np.array(status, dtype=np.float32).reshape(HEIGHT, WIDTH)
         return status, self.self_blood, self_stamina, self.boss_blood
 
     def action_judge(self, self_blood, next_self_blood, self_stamina,
-                     next_self_stamina, boss_blood, next_boss_blood, stop,
-                     emergence_break):
+                     next_self_stamina, boss_blood, next_boss_blood, action,
+                     stop, emergence_break):
         # get action reward
         # emergence_break is used to break down training
         if next_self_blood < 3:  # self dead
             if emergence_break < 2:
-                reward = -1000
+                reward = -1000 + next_self_blood - self_blood
                 done = 1
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = -1000
+                reward = -1000 + next_self_blood - self_blood
                 done = 1
                 stop = 0
                 emergence_break = 100
                 return reward, done, stop, emergence_break
         elif next_boss_blood < 3:  # boss dead
             if emergence_break < 2:
-                reward = 2000
+                reward = 2000 + boss_blood - next_boss_blood
                 done = 0
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = 2000
+                reward = 2000 + boss_blood - next_boss_blood
                 done = 0
                 stop = 0
                 emergence_break = 100
@@ -166,6 +186,8 @@ class gamestatus:
             # print("self_blood_reward:    ",self_blood_reward)
             # print("boss_blood_reward:    ",boss_blood_reward)
             reward = self_blood_reward + boss_blood_reward
+            if next_boss_blood == boss_blood and action != 0:
+                reward -= 1
             done = 0
             emergence_break = 0
             return reward, done, stop, emergence_break
@@ -197,15 +219,37 @@ class gamestatus:
             directkeys.run_right()
             time.sleep(1)
             directkeys.stop_right()
+        elif action == 9:  # 往前翻滚w
+            directkeys.run_forward()
+            directkeys.sprint_jump_roll()
+            time.sleep(1)
+            directkeys.stop_forward()
+        elif action == 10:  # 往后翻滚s
+            directkeys.run_backward()
+            directkeys.sprint_jump_roll()
+            time.sleep(1)
+            directkeys.stop_backward()
+        elif action == 11:  # 往左翻滚a
+            directkeys.run_left()
+            directkeys.sprint_jump_roll()
+            time.sleep(1)
+            directkeys.stop_left()
+        elif action == 12:  # 往右翻滚d
+            directkeys.run_right()
+            directkeys.sprint_jump_roll()
+            time.sleep(1)
+            directkeys.stop_right()
 
     def restart(self):
         while True:
             time.sleep(1)
             status, self_blood, self_stamina, boss_blood = self.get_status_info(
             )
+            print("self_blood: ", self_blood, "self_stamina: ", self_stamina,
+                  "boss_blood: ", boss_blood)
             if self_blood > 200 and self_stamina > 100:
                 break
-        time.sleep(1)
+        time.sleep(2)
         print("dead,restart")
         directkeys.teleport()
         time.sleep(0.2)

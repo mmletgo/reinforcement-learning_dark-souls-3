@@ -12,11 +12,11 @@ HEIGHT = 108
 # blood_window = (60, 91, 280, 562)
 # used to get boss and self blood
 window_size = (0, 0, 1920, 1080)  # 全屏
-boss_blood_window = (569, 936, 1556, 940)  # Boss 血条区域
+boss_blood_window = (569, 932, 1556, 936)  # Boss 血条区域
 self_blood_window = (204, 111, 461, 115)  # 玩家血条区域
 self_stamina_window = (206, 145, 424, 149)  # 玩家体力条区域
 
-action_size = 9
+action_size = 13
 # action[n_choose,j,k,m,r]
 # j-attack, k-jump, m-defense, r-dodge, n_choose-do nothing
 

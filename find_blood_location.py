@@ -150,23 +150,23 @@ while True:
     self_stamina = calculate_self_stamina(stamina_screen_color, image_counter)
 
     # debug--------------------------------------------------------------------------------
-    text = f"Player blood: {self_blood:.2f}% | Boss blood: {boss_blood:.2f}% | Stamina: {self_stamina:.2f}%"
-    print_text_on_image(screen_image,
-                        text,
-                        position=(599, 50),
-                        color=(0, 255, 255),
-                        font_scale=1,
-                        thickness=2)
+    # text = f"Player blood: {self_blood:.2f}% | Boss blood: {boss_blood:.2f}% | Stamina: {self_stamina:.2f}%"
+    # print_text_on_image(screen_image,
+    #                     text,
+    #                     position=(599, 50),
+    #                     color=(0, 255, 255),
+    #                     font_scale=1,
+    #                     thickness=2)
 
-    draw_bounding_box(screen_image,
-                      (self_blood_window[0], self_blood_window[1]),
-                      (self_blood_window[2], self_blood_window[3]))
-    draw_bounding_box(screen_image,
-                      (boss_blood_window[0], boss_blood_window[1]),
-                      (boss_blood_window[2], boss_blood_window[3]))
-    draw_bounding_box(screen_image,
-                      (self_stamina_window[0], self_stamina_window[1]),
-                      (self_stamina_window[2], self_stamina_window[3]))
+    # draw_bounding_box(screen_image,
+    #                   (self_blood_window[0], self_blood_window[1]),
+    #                   (self_blood_window[2], self_blood_window[3]))
+    # draw_bounding_box(screen_image,
+    #                   (boss_blood_window[0], boss_blood_window[1]),
+    #                   (boss_blood_window[2], boss_blood_window[3]))
+    # draw_bounding_box(screen_image,
+    #                   (self_stamina_window[0], self_stamina_window[1]),
+    #                   (self_stamina_window[2], self_stamina_window[3]))
 
     cv2.imwrite(f"processed_screen_{image_counter}.png", screen_image)
     # --------------------------------------------------------------------------------------
