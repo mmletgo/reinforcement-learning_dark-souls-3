@@ -46,12 +46,10 @@ def calculate_self_blood(color_image,
     # print(f"Label: {label} - Blue channel matrix:\n", blue_channel)
     self_blood = 0
     for pixel in color_image[4]:
-        # red_value = pixel[2]
-        # green_value = pixel[1]
-        # blue_value = pixel[0]
-        # if red_value > red_self_blood_threshold and green_value < green_self_blood_threshold and blue_value < green_self_blood_threshold:
-        #     self_blood += 1
-        if pixel >= 90:
+        red_value = pixel[2]
+        green_value = pixel[1]
+        blue_value = pixel[0]
+        if red_value > red_self_blood_threshold and green_value < green_self_blood_threshold and blue_value < green_self_blood_threshold:
             self_blood += 1
 
     total_pixels = color_image.shape[1]
@@ -62,11 +60,11 @@ def calculate_self_blood(color_image,
 
 def calculate_boss_blood(color_image,
                          label,
-                         red_boss_blood_threshold=45,
+                         red_boss_blood_threshold=70,
                          self_stamina_green=30,
                          self_stamina_blue=30):
     self_blood = 0
-    for pixel in color_image[7]:
+    for pixel in color_image[4]:
         red_value = pixel[2]
         green_value = pixel[1]
         blue_value = pixel[0]
@@ -85,29 +83,13 @@ def calculate_self_stamina(color_image,
                            self_stamina_red=80,
                            self_stamina_green=110,
                            self_stamina_blue=80):
-    # self_blood = 0
-    # for pixel in color_image[4]:
-    #     red_value = pixel[2]
-    #     green_value = pixel[1]
-    #     blue_value = pixel[0]
-
-    #     if red_value > self_stamina_red and green_value > self_stamina_green and blue_value > self_stamina_blue:
-    #         self_blood += 1
-
-    # total_pixels = color_image.shape[1]
-    # health_percentage = (self_blood / total_pixels) * 100
-
-    # return health_percentage
-
     self_blood = 0
-    # print(color_image[4])
     for pixel in color_image[4]:
-        # red_value = pixel[2]
-        # green_value = pixel[1]
-        # blue_value = pixel[0]
-        # if red_value > red_self_blood_threshold and green_value < green_self_blood_threshold and blue_value < green_self_blood_threshold:
-        #     self_blood += 1
-        if pixel >= 90:
+        red_value = pixel[2]
+        green_value = pixel[1]
+        blue_value = pixel[0]
+
+        if red_value > self_stamina_red and green_value > self_stamina_green and blue_value > self_stamina_blue:
             self_blood += 1
 
     total_pixels = color_image.shape[1]
@@ -149,22 +131,18 @@ for i in list(range(wait_time))[::-1]:
     time.sleep(1)
 
 last_time = time.time()
-test = True
+
 while True:
-    test = False
     # 获取屏幕截图
     screen_image = grabscreen.grab_screen(window_size)
 
-    self_screen_color = cv2.cvtColor(
-        screen_image[self_blood_window[1]:self_blood_window[3],
-                     self_blood_window[0]:self_blood_window[2]],
-        cv2.COLOR_BGR2GRAY)
+    self_screen_color = screen_image[self_blood_window[1]:self_blood_window[3],
+                                     self_blood_window[0]:self_blood_window[2]]
     boss_screen_color = screen_image[boss_blood_window[1]:boss_blood_window[3],
                                      boss_blood_window[0]:boss_blood_window[2]]
-    stamina_screen_color = cv2.cvtColor(
-        screen_image[self_stamina_window[1]:self_stamina_window[3],
-                     self_stamina_window[0]:self_stamina_window[2]],
-        cv2.COLOR_BGR2GRAY)
+    stamina_screen_color = screen_image[
+        self_stamina_window[1]:self_stamina_window[3],
+        self_stamina_window[0]:self_stamina_window[2]]
 
     # 计算血量和体力值
     self_blood = calculate_self_blood(self_screen_color, image_counter)
@@ -173,25 +151,24 @@ while True:
 
     # debug--------------------------------------------------------------------------------
     text = f"Player blood: {self_blood:.2f}% | Boss blood: {boss_blood:.2f}% | Stamina: {self_stamina:.2f}%"
-    print(text)
-    # print_text_on_image(screen_image,
-    #                     text,
-    #                     position=(599, 50),
-    #                     color=(0, 255, 255),
-    #                     font_scale=1,
-    #                     thickness=2)
+    print_text_on_image(screen_image,
+                        text,
+                        position=(599, 50),
+                        color=(0, 255, 255),
+                        font_scale=1,
+                        thickness=2)
 
-    # draw_bounding_box(screen_image,
-    #                   (self_blood_window[0], self_blood_window[1]),
-    #                   (self_blood_window[2], self_blood_window[3]))
-    # draw_bounding_box(screen_image,
-    #                   (boss_blood_window[0], boss_blood_window[1]),
-    #                   (boss_blood_window[2], boss_blood_window[3]))
-    # draw_bounding_box(screen_image,
-    #                   (self_stamina_window[0], self_stamina_window[1]),
-    #                   (self_stamina_window[2], self_stamina_window[3]))
+    draw_bounding_box(screen_image,
+                      (self_blood_window[0], self_blood_window[1]),
+                      (self_blood_window[2], self_blood_window[3]))
+    draw_bounding_box(screen_image,
+                      (boss_blood_window[0], boss_blood_window[1]),
+                      (boss_blood_window[2], boss_blood_window[3]))
+    draw_bounding_box(screen_image,
+                      (self_stamina_window[0], self_stamina_window[1]),
+                      (self_stamina_window[2], self_stamina_window[3]))
 
-    # cv2.imwrite(f"processed_screen_{image_counter}.png", screen_image)
+    cv2.imwrite(f"processed_screen_{image_counter}.png", screen_image)
     # --------------------------------------------------------------------------------------
 
     # 显示图片（可选）
@@ -202,6 +179,7 @@ while True:
 
     # 增加计数器
     image_counter += 1
+    time.sleep(1)
 
     # 按 'q' 键退出
     if cv2.waitKey(5) & 0xFF == ord('q'):
