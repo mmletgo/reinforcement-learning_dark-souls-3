@@ -115,6 +115,7 @@ class gamestatus:
         self_stamina = self.self_stamina_count(stamina_screen_color)
         screen_gray = cv2.cvtColor(screen_image, cv2.COLOR_RGB2GRAY)
         status = cv2.resize(screen_gray, (WIDTH, HEIGHT))
+        status = np.array(status, dtype=np.float32).reshape(HEIGHT, WIDTH)
         return status, self.self_blood, self_stamina, self.boss_blood
 
     def action_judge(self, self_blood, next_self_blood, self_stamina,
@@ -202,7 +203,7 @@ class gamestatus:
             time.sleep(1)
             status, self_blood, self_stamina, boss_blood = self.get_status_info(
             )
-            if self_blood > 200 and self_stamina > 200:
+            if self_blood > 200 and self_stamina > 100:
                 break
         time.sleep(1)
         print("dead,restart")
