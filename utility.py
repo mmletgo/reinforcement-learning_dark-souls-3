@@ -240,16 +240,37 @@ class gamestatus:
             time.sleep(1)
             directkeys.stop_right()
 
+    def suicide_restart(self):
+        directkeys.menu()
+        time.sleep(0.5)
+        directkeys.switch_item()
+        time.sleep(0.5)
+        directkeys.action()
+        time.sleep(3)
+        directkeys.action()
+        time.sleep(3)
+        directkeys.switch_left_weapon()
+        time.sleep(1)
+        directkeys.action()
+        time.sleep(5)
+        print("Suicide Restart")
+
     def restart(self):
+        i = 0
         while True:
             time.sleep(1)
             status, self_blood, self_stamina, boss_blood = self.get_status_info(
             )
             print("self_blood: ", self_blood, "self_stamina: ", self_stamina,
                   "boss_blood: ", boss_blood)
+            i += 1
             if self_blood > 200 and self_stamina > 100:
                 break
-        time.sleep(2)
+            if i >= 10:
+                self.suicide_restart()
+                i = 0
+                continue
+        time.sleep(3)
         print("dead,restart")
         directkeys.teleport()
         time.sleep(0.2)

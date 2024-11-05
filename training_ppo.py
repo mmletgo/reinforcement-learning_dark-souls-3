@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 import time
 from model_ppo import PPO
 from utility import pause_game, gamestatus
 from setting import action_size, paused
-
+import traceback
 # PPO算法的超参数
 ppo_dict = {
     'gamma': 0.9,  # 折扣因子
@@ -28,6 +27,7 @@ if __name__ == '__main__':
         )
         if boss_blood < 100:
             print("can't find boss, restart")
+            newgame.suicide_restart()
             newgame.restart()
             continue
 
@@ -42,8 +42,9 @@ if __name__ == '__main__':
             # get the action by state
             try:
                 action, logprob = agent.Choose_Action(status)
-            except:
+            except Exception:
                 print("Choose_Action error")
+                print(traceback.format_exc())
                 break
             newgame.take_action(action)
             # take station then the station change
@@ -79,8 +80,9 @@ if __name__ == '__main__':
             if done == 1:
                 try:
                     agent.update()
-                except:
+                except Exception:
                     print("update error")
+                    print(traceback.format_exc())
                 agent.clear_memory()
                 newgame.reset()
                 print(f'episode: {episode}, Reward:{total_reward}')
