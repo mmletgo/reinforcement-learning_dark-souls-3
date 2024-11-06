@@ -57,10 +57,10 @@ if __name__ == '__main__':
             #       boss_blood, next_boss_blood, stop, emergence_break)
             # get action reward+we
             elapsed_time = time.time() - last_time
-            if action != 0:
-                print(
-                    f'loop took {elapsed_time:.2f} s, action {newgame.action_dict[action]}, self_blood {self_blood}, next_self_blood {next_self_blood}, boss_blood {boss_blood}, next_boss_blood {next_boss_blood}, reward {reward}, done {done}'
-                )
+            # if action != 0:
+            print(
+                f'loop took {elapsed_time:.2f} s, action {newgame.action_dict[action]}, self_blood {self_blood}, next_self_blood {next_self_blood}, boss_blood {boss_blood}, next_boss_blood {next_boss_blood}, reward {reward}, done {done}'
+            )
             if emergence_break == 100:
                 # emergence break , save model and paused
                 # 遇到紧急情况，保存数据，并且暂停
