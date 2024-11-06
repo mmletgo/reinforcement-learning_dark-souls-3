@@ -28,7 +28,7 @@ LEFT = 0xCB
 RIGHT = 0xCD
 
 ADD = 0x4E
-
+SUBSTRACT = 0x4A
 ESC = 0x01
 
 # C struct redefinitions
@@ -211,6 +211,12 @@ def teleport():
     ReleaseKey(ADD)
 
 
+def teleport_back():
+    PressKey(SUBSTRACT)
+    time.sleep(0.3)
+    ReleaseKey(SUBSTRACT)
+
+
 def menu():
     PressKey(ESC)
     time.sleep(0.3)
@@ -232,6 +238,8 @@ def menu():
 def test_suicide():
     time.sleep(5)
     print('start test')
+    teleport_back()
+    time.sleep(1)
     menu()
     time.sleep(0.2)
     switch_item()

@@ -6,8 +6,8 @@ from setting import action_size, paused
 import traceback
 # PPO算法的超参数
 ppo_dict = {
-    'gamma': 0.9,  # 折扣因子
-    'lr': 3e-4,  # 学习率
+    'gamma': 0.99,  # 折扣因子
+    'lr': 2.5e-4,  # 学习率
     'eps_clip': 0.1,  # PPO中的剪辑阈值
     'K_epochs': 4  # 每次采样后更新策略的次数
 }
