@@ -245,7 +245,7 @@ class gamestatus:
         directkeys.teleport_back()
         time.sleep(1)
         directkeys.run_left()
-        time.sleep(2)
+        time.sleep(5)
         directkeys.stop_left()
         directkeys.menu()
         time.sleep(0.5)
