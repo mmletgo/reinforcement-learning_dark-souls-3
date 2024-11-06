@@ -24,7 +24,9 @@ class PolicyNetwork(nn.Module):
         x = torch.relu(self.conv3(x))
         x = x.view(x.size(0), -1)
         x = torch.relu(self.fc1(x))
-        action_probs = torch.softmax(self.action_layer(x) + 1e-8, dim=-1)
+        logits = self.action_layer(x)
+        logits = logits - logits.max(dim=-1, keepdim=True)[0]  # 归一化，防止数值过大
+        action_probs = torch.softmax(logits, dim=-1) + 1e-8  # 增加一个小常数以确保非零
         return action_probs
 
     def act(self, state):
@@ -168,7 +170,7 @@ class PPO:
             self.policy_optimizer.zero_grad()
             policy_loss.backward()
             # Clip the gradient to stabilize training
-            nn.utils.clip_grad_norm_(self.policy_net.parameters(), 0.5)
+            nn.utils.clip_grad_norm_(self.policy_net.parameters(), 0.1)
             self.policy_optimizer.step()
 
             value_loss_unclipped = (new_values - returns).pow(2) / 2

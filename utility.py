@@ -107,7 +107,7 @@ class gamestatus:
                 self_stamina += 1
         return self_stamina
 
-    def get_status_info(self):
+    def get_states_info(self):
         screen_image = grab_screen(window_size)
         screen_image_rgb = cv2.cvtColor(screen_image, cv2.COLOR_BGRA2RGB)
         self_screen_color = screen_image_rgb[
@@ -134,9 +134,10 @@ class gamestatus:
             self.self_blood = self_blood
         self_stamina = self.self_stamina_count(stamina_screen_color)
         screen_gray = cv2.cvtColor(screen_image_rgb, cv2.COLOR_RGB2GRAY)
-        status = cv2.resize(screen_gray, (WIDTH, HEIGHT))
-        status = np.array(status, dtype=np.float32).reshape(HEIGHT, WIDTH)
-        return status, self.self_blood, self_stamina, self.boss_blood
+        states = cv2.resize(screen_gray, (WIDTH, HEIGHT))
+        states = np.array(states, dtype=np.float32).reshape(HEIGHT, WIDTH)
+        states = states / 255.0
+        return states, self.self_blood, self_stamina, self.boss_blood
 
     def action_judge(self, self_blood, next_self_blood, self_stamina,
                      next_self_stamina, boss_blood, next_boss_blood, action,
@@ -145,26 +146,26 @@ class gamestatus:
         # emergence_break is used to break down training
         if next_self_blood < 3:  # self dead
             if emergence_break < 2:
-                reward = -100 + next_self_blood - self_blood
+                reward = -1000 + next_self_blood - self_blood
                 done = 1
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = -100 + next_self_blood - self_blood
+                reward = -1000 + next_self_blood - self_blood
                 done = 1
                 stop = 0
                 emergence_break = 100
                 return reward, done, stop, emergence_break
         elif next_boss_blood < 3:  # boss dead
             if emergence_break < 2:
-                reward = 200 + boss_blood - next_boss_blood
+                reward = 2000 + boss_blood - next_boss_blood
                 done = 0
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = 200 + boss_blood - next_boss_blood
+                reward = 2000 + boss_blood - next_boss_blood
                 done = 0
                 stop = 0
                 emergence_break = 100
@@ -267,7 +268,7 @@ class gamestatus:
         i = 0
         while True:
             time.sleep(1)
-            status, self_blood, self_stamina, boss_blood = self.get_status_info(
+            states, self_blood, self_stamina, boss_blood = self.get_states_info(
             )
             print("self_blood: ", self_blood, "self_stamina: ", self_stamina,
                   "boss_blood: ", boss_blood)

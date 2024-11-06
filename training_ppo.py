@@ -4,6 +4,7 @@ from model_ppo import PPO
 from utility import pause_game, gamestatus
 from setting import action_size, paused
 import traceback
+import datetime
 # PPO算法的超参数
 ppo_dict = {
     'gamma': 0.99,  # 折扣因子
@@ -23,7 +24,7 @@ if __name__ == '__main__':
     # 用于防止出现意外紧急停止训练防止错误训练数据扰乱神经网络
     newgame.restart()
     for episode in range(EPISODES):
-        status, self_blood, self_stamina, boss_blood = newgame.get_status_info(
+        states, self_blood, self_stamina, boss_blood = newgame.get_states_info(
         )
         if boss_blood < 100:
             print("can't find boss, restart")
@@ -41,14 +42,14 @@ if __name__ == '__main__':
             last_time = time.time()
             # get the action by state
             try:
-                action, logprob = agent.Choose_Action(status)
+                action, logprob = agent.Choose_Action(states)
             except Exception:
                 print("Choose_Action error")
                 print(traceback.format_exc())
                 break
             newgame.take_action(action)
             # take station then the station change
-            next_status, next_self_blood, next_self_stamina, next_boss_blood = newgame.get_status_info(
+            next_states, next_self_blood, next_self_stamina, next_boss_blood = newgame.get_states_info(
             )
             reward, done, stop, emergence_break = newgame.action_judge(
                 self_blood, next_self_blood, self_stamina, next_self_stamina,
@@ -57,10 +58,11 @@ if __name__ == '__main__':
             #       boss_blood, next_boss_blood, stop, emergence_break)
             # get action reward+we
             elapsed_time = time.time() - last_time
-            # if action != 0:
-            print(
-                f'loop took {elapsed_time:.2f} s, action {newgame.action_dict[action]}, self_blood {self_blood}, next_self_blood {next_self_blood}, boss_blood {boss_blood}, next_boss_blood {next_boss_blood}, reward {reward}, done {done}'
-            )
+            if action != 0:
+                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(
+                    f'{current_time} - loop took {elapsed_time:.2f} s, action {newgame.action_dict[action]}, self_blood {self_blood}, next_self_blood {next_self_blood}, boss_blood {boss_blood}, next_boss_blood {next_boss_blood}, reward {reward}, done {done}'
+                )
             if emergence_break == 100:
                 # emergence break , save model and paused
                 # 遇到紧急情况，保存数据，并且暂停
@@ -70,8 +72,8 @@ if __name__ == '__main__':
                 break
                 # paused = True
 
-            agent.store_transition(status, action, logprob, reward)
-            status = next_status
+            agent.store_transition(states, action, logprob, reward)
+            states = next_states
             self_blood = next_self_blood
             self_stamina = next_self_stamina
             boss_blood = next_boss_blood
