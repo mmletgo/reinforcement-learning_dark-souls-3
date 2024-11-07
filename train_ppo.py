@@ -8,6 +8,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback
 from tqdm import tqdm
 import os
 import torch
+from stable_baselines3.common.env_checker import check_env
 
 class StepPrintCallback(BaseCallback):
     def __init__(self, verbose=0):
@@ -45,38 +46,66 @@ class TQDMProgressBarCallback(BaseCallback):
 def main():
     # 创建训练环境
     env = DarkSoulsBossEnv(env_name='train_env')
-    
+    #check_env(env)
     # 检查是否存在检查点
     checkpoint_dir = './models/'
     if not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
     checkpoints = [f for f in os.listdir(checkpoint_dir) if f.startswith('ppo_darksouls')]
+    print('checkpoints:',checkpoints)
     if checkpoints:
-        # 按照训练步数排序，加载最新的检查点
-        checkpoints.sort(key=lambda x: int(x.split('_')[-2]))
+        # 尝试加载最新的检查点
         latest_checkpoint = os.path.join(checkpoint_dir, checkpoints[-1])
-        model = PPO.load(latest_checkpoint, env=env)
-        print(f"Model loaded from {latest_checkpoint}")
+        print('last checkpoints:',latest_checkpoint)
+        try:
+            model = PPO.load(latest_checkpoint, env=env)
+            print(f"Model loaded from {latest_checkpoint}")
+            # print('policy class: ',model.policy_class)
+            # if model.policy_class == PPO.get_policy_from_name('CnnPolicy'):
+            #     print(f"Model loaded from {latest_checkpoint}")
+            # else:
+            #     print("Existing model uses a different policy. Starting training from scratch.")
+            #     raise ValueError("Policy mismatch")
+        except Exception as e:
+            # 如果模型无法加载或策略不匹配，创建新模型
+            model = PPO(
+                'CnnPolicy',
+                env,
+                verbose=1,
+                tensorboard_log="./ppo_darksouls_tensorboard/",
+                learning_rate=1e-4,
+                n_steps=1024,
+                batch_size=32,
+                gamma=0.99,
+                gae_lambda=0.95,
+                clip_range=0.2,
+                ent_coef=0.0,
+                device='cuda'
+            )
+
+            print("No compatible checkpoint found. Starting training from scratch.")
     else:
         # 如果没有检查点，创建新模型
         model = PPO(
-            'MlpPolicy',
+            'CnnPolicy',
             env,
             verbose=1,
             tensorboard_log="./ppo_darksouls_tensorboard/",
-            learning_rate=3e-4,
-            n_steps=2048,
-            batch_size=64,
+            learning_rate=1e-4,
+            n_steps=1024,
+            batch_size=32,
             gamma=0.99,
             gae_lambda=0.95,
             clip_range=0.2,
             ent_coef=0.0,
-            device='cuda'
+            device='cuda',
+            policy_kwargs=dict(normalize_images=False)  # 添加此行
         )
+
         print("No checkpoint found. Starting training from scratch.")
 
     # 设置检查点回调和自定义回调
-    checkpoint_callback = CheckpointCallback(save_freq=499, save_path=checkpoint_dir,
+    checkpoint_callback = CheckpointCallback(save_freq=500, save_path=checkpoint_dir,
                                              name_prefix='ppo_darksouls')
     progress_bar_callback = TQDMProgressBarCallback(total_timesteps=1000000)
     step_print_callback = StepPrintCallback()

@@ -114,62 +114,6 @@ class gamestatus:
                 self_stamina += 1
         return self_stamina
 
-    # def self_blood_count(self, color_image, red_self_blood_threshold=80, green_self_blood_threshold=80, blue_self_blood_threshold=80):
-    #     self_blood = 0
-    #     row4 = color_image[4]
-    #     #print('self blood:', row4)
-    #     # Save the 5th row of the image
-    #     self.self_blood_row = row4
-    #     for pixel in row4:
-    #         red_value = pixel[0]
-    #         green_value = pixel[1]
-    #         blue_value = pixel[2]
-    #         if red_value > red_self_blood_threshold and green_value < green_self_blood_threshold and blue_value < blue_self_blood_threshold:
-    #             self_blood += 1
-
-    #     total_pixels = color_image.shape[1]
-    #     health_percentage = (self_blood / total_pixels) * 100
-
-    #     return health_percentage
-
-    # def boss_blood_count(self, color_image, red_boss_blood_threshold=70, self_stamina_green=30, self_stamina_blue=30):
-    #     self_blood = 0
-    #     row4 = color_image[4]
-    #     #print('boss blood:', row4)
-    #     # Save the 5th row of the image
-    #     self.boss_blood_row = row4
-    #     for pixel in row4:
-    #         red_value = pixel[0]
-    #         green_value = pixel[1]
-    #         blue_value = pixel[2]
-
-    #         if red_value > red_boss_blood_threshold and green_value < self_stamina_green and blue_value < self_stamina_blue:
-    #             self_blood += 1
-
-    #     total_pixels = color_image.shape[1]
-    #     health_percentage = (self_blood / total_pixels) * 100
-
-    #     return health_percentage
-
-    # def self_stamina_count(self, color_image, self_stamina_red=80, self_stamina_green=110, self_stamina_blue=80):
-    #     self_blood = 0
-    #     row4 = color_image[4]
-    #     #print('self stamina:', row4)
-    #     # Save the 5th row of the image
-    #     self.self_stamina_row = row4
-    #     for pixel in row4:
-    #         red_value = pixel[0]
-    #         green_value = pixel[1]
-    #         blue_value = pixel[2]
-
-    #         if red_value > self_stamina_red and green_value > self_stamina_green and blue_value > self_stamina_blue:
-    #             self_blood += 1
-
-    #     total_pixels = color_image.shape[1]
-    #     health_percentage = (self_blood / total_pixels) * 100
-
-    #     return health_percentage
-
     def get_status_info(self):
         if not os.path.exists('data'):
             os.makedirs('data')
@@ -193,6 +137,10 @@ class gamestatus:
         self_blood = self.self_blood_count(self_screen_color)
         boss_blood = self.boss_blood_count(boss_screen_color)
         self_stamina = self.self_stamina_count(stamina_screen_color)
+        # 确保返回的血量和耐力是标量
+        self_blood = float(self_blood)
+        self_stamina = float(self_stamina)
+        boss_blood = float(boss_blood)
 
         # Save matrices to txt file
         # with open(f"data/matrix_{timestamp}.txt", 'w') as f:
@@ -248,63 +196,91 @@ class gamestatus:
         screen_gray = cv2.cvtColor(screen_image_rgb, cv2.COLOR_RGB2GRAY)
         status = cv2.resize(screen_gray, (WIDTH, HEIGHT))
         status = np.array(status, dtype=np.float32).reshape(HEIGHT, WIDTH)
+        status = status/255.0
 
         return status, self.self_blood, self_stamina, self.boss_blood
 
+    def action_judge(self, self_blood, next_self_blood, self_stamina, next_self_stamina,
+                 boss_blood, next_boss_blood, action, prev_action, stop, emergence_break,
+                 in_combo, combo_count):
+        # 设定体力阈值
+        high_stamina_threshold = 50
+        low_stamina_threshold = 20
 
-    def action_judge(self, self_blood, next_self_blood, self_stamina,
-                     next_self_stamina, boss_blood, next_boss_blood, action,prev_action,
-                     stop, emergence_break):
-        # get action reward
-        # emergence_break is used to break down training
-        if next_self_blood < 3:  # self dead
-            if emergence_break < 2:
-                reward = -1000 + next_self_blood - self_blood
-                done = 1
-                stop = 0
-                emergence_break += 1
-                return reward, done, stop, emergence_break
-            else:
-                reward = -1000 + next_self_blood - self_blood
-                done = 1
-                stop = 0
-                emergence_break = 100
-                return reward, done, stop, emergence_break
-        elif next_boss_blood < 3:  # boss dead
-            if emergence_break < 2:
-                reward = 2000 + boss_blood - next_boss_blood
-                done = 0
-                stop = 0
-                emergence_break += 1
-                return reward, done, stop, emergence_break
-            else:
-                reward = 2000 + boss_blood - next_boss_blood
-                done = 0
-                stop = 0
-                emergence_break = 100
-                return reward, done, stop, emergence_break
+        # 判断角色是否死亡
+        if next_self_blood < 3:
+            reward = -1000
+            done = 1
+            stop = 0
+            emergence_break += 1 if emergence_break < 2 else 100
+            return reward, done, stop, emergence_break, False, 0  # 重置连击状态
+        # 判断 Boss 是否死亡
+        elif next_boss_blood < 3:
+            reward = 2000
+            done = 0
+            stop = 0
+            emergence_break += 1 if emergence_break < 2 else 100
+            return reward, done, stop, emergence_break, False, 0  # 重置连击状态
         else:
+            # 初始化奖励
             self_blood_reward = 0
             boss_blood_reward = 0
-            # print(next_self_blood - self_blood)
-            # print(next_boss_blood - boss_blood)
-            if next_self_blood - self_blood < -7:
-                if stop == 0:
-                    self_blood_reward = next_self_blood - self_blood
-                    stop = 1
-                    # 防止连续取帧时一直计算掉血
+            action_reward = 0
+            stamina_penalty = 0
+            idle_penalty = 0
+            combo_reward = 0  # 用于奖励连击
+
+            # 计算角色血量变化
+            if next_self_blood < self_blood:
+                self_blood_reward = (next_self_blood - self_blood) * 3  # 负值，受到伤害
+
+            # 计算 Boss 血量变化
+            boss_damage = boss_blood - next_boss_blood
+            if boss_damage > 0:
+                boss_blood_reward = boss_damage * 3  # 正值，给予更多奖励
+
+            # 获取当前体力
+            current_stamina = next_self_stamina
+
+            # 动作奖励和体力管理
+            if action in [1, 3]:  # 攻击动作
+                if current_stamina > high_stamina_threshold:
+                    action_reward = 20  # 体力充足，鼓励攻击
+                elif current_stamina < low_stamina_threshold:
+                    action_reward = -2  # 体力过低，惩罚攻击
+                else:
+                    action_reward = 0  # 体力一般，不奖励也不惩罚
+            # ... 其他动作奖励代码 ...
+
+            # 组合动作奖励：如果上一个动作是向前翻滚或向前移动，当前动作是攻击，给予额外奖励
+            if prev_action in [5, 9] and action in [1, 3]:
+                combo_reward += 40  # 给予组合动作奖励
+
+            # 连击逻辑
+            if in_combo:
+                if action in [1, 3] and boss_damage > 0:
+                    # 连击中继续成功攻击
+                    combo_count += 1
+                    combo_reward += 100 * combo_count  # 连击奖励，奖励值可根据需要调整
+                else:
+                    # 连击中断
+                    in_combo = False
+                    combo_count = 0
             else:
-                stop = 0
-            if next_boss_blood - boss_blood <= -3:
-                boss_blood_reward = boss_blood - next_boss_blood
-            # print("self_blood_reward:    ",self_blood_reward)
-            # print("boss_blood_reward:    ",boss_blood_reward)
-            reward = self_blood_reward + boss_blood_reward
-            if next_boss_blood == boss_blood and action != 0:
-                reward -= 1
+                if action in [1, 3] and boss_damage > 0:
+                    # 开始新的连击
+                    in_combo = True
+                    combo_count = 1
+                    combo_reward += 10  # 初始连击奖励
+
+            # 总奖励计算
+            reward = self_blood_reward + boss_blood_reward + action_reward + stamina_penalty + idle_penalty + combo_reward
+
             done = 0
             emergence_break = 0
-            return reward, done, stop, emergence_break
+            return reward, done, stop, emergence_break, in_combo, combo_count
+
+
 
     def take_action(self, action):
         if action == 0:  # n_choose
@@ -379,6 +355,7 @@ class gamestatus:
                   "boss_blood: ", boss_blood)
             i += 1
             if self_blood > 200 and self_stamina > 100:
+                print('restart ')
                 break
             if i >= 100:
                 self.suicide_restart()
