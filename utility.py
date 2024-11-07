@@ -2,7 +2,7 @@ from getkeys import key_check
 import time
 import directkeys
 import cv2
-from grabscreen import grab_screen,get_hwnd_by_process_name,grab_screen_by_process
+from grabscreen import grab_screen, get_hwnd_by_process_name, grab_screen_by_process
 from setting import WIDTH, HEIGHT, window_size, self_blood_window, boss_blood_window, self_stamina_window
 import numpy as np
 
@@ -37,7 +37,7 @@ def pause_game(paused):
 
 class gamestatus:
 
-    def __init__(self):
+    def __init__(self, times=1):
         self.self_blood = 0
         self.boss_blood = 0
         self.action_dict = {
@@ -56,6 +56,7 @@ class gamestatus:
             12: "run_right_roll"
         }
         self.hwnd = get_hwnd_by_process_name(process_name="DarkSoulsIII.exe")
+        self.times = times
 
     def reset(self):
         self.self_blood = 0
@@ -208,46 +209,46 @@ class gamestatus:
             directkeys.sprint_jump_roll()
         elif action == 5:  # 往前走w
             directkeys.run_forward()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_forward()
         elif action == 6:  # 往后走s
             directkeys.run_backward()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_backward()
         elif action == 7:  # 往左走a
             directkeys.run_left()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_left()
         elif action == 8:  # 往右走d
             directkeys.run_right()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_right()
         elif action == 9:  # 往前翻滚w
             directkeys.run_forward()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_forward()
         elif action == 10:  # 往后翻滚s
             directkeys.run_backward()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_backward()
         elif action == 11:  # 往左翻滚a
             directkeys.run_left()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_left()
         elif action == 12:  # 往右翻滚d
             directkeys.run_right()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(1 / self.times)
             directkeys.stop_right()
 
     def suicide_restart(self):
         directkeys.teleport_back()
         time.sleep(1)
         directkeys.run_left()
-        time.sleep(5)
+        time.sleep(5 / self.times)
         directkeys.stop_left()
         directkeys.menu()
         time.sleep(0.5)
@@ -262,7 +263,7 @@ class gamestatus:
         directkeys.action()
         time.sleep(5)
         directkeys.run_left()
-        time.sleep(2)
+        time.sleep(5 / self.times)
         directkeys.stop_left()
         print("Suicide Restart")
 
@@ -286,13 +287,13 @@ class gamestatus:
         directkeys.teleport()
         time.sleep(0.2)
         directkeys.run_forward()
-        time.sleep(1)
+        time.sleep(1 / self.times)
         directkeys.stop_forward()
         time.sleep(0.2)
         directkeys.action()
-        time.sleep(4)
+        time.sleep(4 / self.times)
         directkeys.run_forward()
-        time.sleep(5.5)
+        time.sleep(5.5 / self.times)
         directkeys.stop_forward()
         time.sleep(0.2)
         directkeys.reset_camera()

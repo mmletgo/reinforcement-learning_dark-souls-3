@@ -66,7 +66,7 @@ def grab_screen_by_process(hwnd):
 
     # 获取标题栏高度和边框冗余
     titlebar_height = win32api.GetSystemMetrics(win32con.SM_CYCAPTION)
-    print(titlebar_height)
+    # print(titlebar_height)
     border_thickness = 8  # 假设每边都有8像素冗余
 
     # 计算实际内容区域
