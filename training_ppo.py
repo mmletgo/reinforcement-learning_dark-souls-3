@@ -16,7 +16,7 @@ EPISODES = 3000  # 训练的最大时间步数
 
 if __name__ == '__main__':
     agent = PPO(action_size, ppo_dict)
-    newgame = gamestatus(2.5)
+    newgame = gamestatus(2)
     paused = pause_game(paused)
     # paused at the begin
     emergence_break = 0
