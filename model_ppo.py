@@ -160,15 +160,16 @@ class PPO:
             surr1 = ratios * normalized_advantages
             surr2 = torch.clamp(ratios, 1 - self.eps_clip,
                                 1 + self.eps_clip) * normalized_advantages
-            policy_loss = -torch.min(surr1, surr2).mean() - 0.01 * dist_entropy.mean()
+            policy_loss = -torch.min(surr1, surr2).mean()
+            true_policy_loss = -torch.min(surr1, surr2).mean() - 0.01 * dist_entropy.mean()
 
             # 检查是否出现 NaN，如果有则跳过本次更新
-            if torch.isnan(policy_loss) or torch.isnan(new_values).any():
+            if torch.isnan(true_policy_loss) or torch.isnan(new_values).any():
                 print("NaN detected in policy loss or new values. Skipping update.")
                 return  # 终止本次更新
 
             self.policy_optimizer.zero_grad()
-            policy_loss.backward()
+            true_policy_loss.backward()
             # Clip the gradient to stabilize training
             nn.utils.clip_grad_norm_(self.policy_net.parameters(), 0.1)
             self.policy_optimizer.step()
@@ -194,7 +195,7 @@ class PPO:
                                    self.update_count * self.K_epochs + epoch)
             self.writer.add_scalar("Loss/Value_Loss", value_loss.item(),
                                    self.update_count * self.K_epochs + epoch)
-            self.writer.add_scalar("Loss/Entropy", dist_entropy.mean().item(), self.update_count * self.K_epochs + epoch)
+            self.writer.add_scalar("Loss/Entropy", 0.01 * dist_entropy.mean().item(), self.update_count * self.K_epochs + epoch)
         # 增加更新计数
         self.update_count += 1
         self.policy_scheduler.step(policy_loss)
