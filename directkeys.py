@@ -29,6 +29,8 @@ RIGHT = 0xCD
 
 ADD = 0x4E
 
+ESC = 0x01
+
 # C struct redefinitions
 PUL = ctypes.POINTER(ctypes.c_ulong)
 
@@ -83,7 +85,7 @@ def left_click():
 
 def right_click():
     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTDOWN, 0, 0, 0, 0)
-    time.sleep(0.1)
+    time.sleep(1)
     win32api.mouse_event(win32con.MOUSEEVENTF_RIGHTUP, 0, 0, 0, 0)
 
 
@@ -175,7 +177,7 @@ def sprint_jump_roll():
 
 def reset_camera():
     PressKey(Q)
-    time.sleep(0.1)
+    time.sleep(0.3)
     ReleaseKey(Q)
 
 
@@ -205,9 +207,14 @@ def switch_right_weapon():
 
 def teleport():
     PressKey(ADD)
-    time.sleep(0.1)
+    time.sleep(0.3)
     ReleaseKey(ADD)
 
+
+def menu():
+    PressKey(ESC)
+    time.sleep(0.3)
+    ReleaseKey(ESC)
 
 # if __name__ == '__main__':
 #     time.sleep(5)  # 等待5秒
@@ -220,6 +227,24 @@ def teleport():
 #             time.sleep(0.1)
 #             ReleaseKey(W)
 #             time.sleep(0.2)
+
+
+def test_suicide():
+    time.sleep(5)
+    print('start test')
+    menu()
+    time.sleep(0.2)
+    switch_item()
+    time.sleep(0.2)
+    action()
+    time.sleep(3)
+    action()
+    time.sleep(3)
+    switch_left_weapon()
+    time.sleep(1)
+    action()
+    time.sleep(2)
+    print("Suicide Restart")
 
 
 def test_controls():
@@ -274,4 +299,4 @@ def test_controls():
 
 
 if __name__ == '__main__':
-    test_controls()
+    test_suicide()

@@ -37,6 +37,10 @@ def restart():
     time.sleep(5.5)
     directkeys.stop_forward()
     time.sleep(0.2)
+    directkeys.action()
+    time.sleep(0.2)
+    directkeys.sprint_jump_roll()
+    time.sleep(0.2)
     directkeys.reset_camera()
     print("restart a new episode")
 
