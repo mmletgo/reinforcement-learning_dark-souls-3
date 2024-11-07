@@ -189,7 +189,7 @@ class gamestatus:
                 boss_blood_reward = boss_blood - next_boss_blood
             # print("self_blood_reward:    ",self_blood_reward)
             # print("boss_blood_reward:    ",boss_blood_reward)
-            reward = self_blood_reward + boss_blood_reward
+            reward = self_blood_reward + boss_blood_reward * 3
             if next_boss_blood == boss_blood and action != 0:
                 reward -= 1
             done = 0
