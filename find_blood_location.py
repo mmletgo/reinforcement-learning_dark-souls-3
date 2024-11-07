@@ -3,7 +3,7 @@ import cv2
 import time
 import grabscreen
 import numpy as np
-
+from grabscreen import grab_screen_by_process,get_hwnd_by_process_name
 image_counter = 1
 
 
@@ -129,12 +129,13 @@ self_stamina_window = (204, 139, 425, 153)  # 玩家体力条区域
 for i in list(range(wait_time))[::-1]:
     print(i + 1)
     time.sleep(1)
-
+hwnd = get_hwnd_by_process_name()
 last_time = time.time()
 
 while True:
     # 获取屏幕截图
-    screen_image = grabscreen.grab_screen(window_size)
+    # screen_image = grabscreen.grab_screen(window_size)
+    screen_image = grab_screen_by_process(hwnd)
 
     self_screen_color = screen_image[self_blood_window[1]:self_blood_window[3],
                                      self_blood_window[0]:self_blood_window[2]]
@@ -173,9 +174,11 @@ while True:
 
     # 显示图片（可选）
     # cv2.imshow('Processed Image', screen_image)
+    now = time.time()
+    print(f"{now - last_time:.2f} seconds")
 
     # 记录处理时间
-    last_time = time.time()
+    last_time = now
 
     # 增加计数器
     image_counter += 1

@@ -2,7 +2,7 @@ from getkeys import key_check
 import time
 import directkeys
 import cv2
-from grabscreen import grab_screen
+from grabscreen import grab_screen,get_hwnd_by_process_name,grab_screen_by_process
 from setting import WIDTH, HEIGHT, window_size, self_blood_window, boss_blood_window, self_stamina_window
 import numpy as np
 
@@ -55,6 +55,7 @@ class gamestatus:
             11: "run_left_roll",
             12: "run_right_roll"
         }
+        self.hwnd = get_hwnd_by_process_name(process_name="DarkSoulsIII.exe")
 
     def reset(self):
         self.self_blood = 0
@@ -108,7 +109,8 @@ class gamestatus:
         return self_stamina
 
     def get_states_info(self):
-        screen_image = grab_screen(window_size)
+        # screen_image = grab_screen(window_size)
+        screen_image = grab_screen_by_process(self.hwnd)
         screen_image_rgb = cv2.cvtColor(screen_image, cv2.COLOR_BGRA2RGB)
         self_screen_color = screen_image_rgb[
             self_blood_window[1]:self_blood_window[3],
