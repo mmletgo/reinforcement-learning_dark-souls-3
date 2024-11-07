@@ -191,7 +191,10 @@ class gamestatus:
             # print("boss_blood_reward:    ",boss_blood_reward)
             reward = self_blood_reward + boss_blood_reward * 3
             if next_boss_blood == boss_blood and action != 0:
-                reward -= 1
+                if action in [1, 2, 3]:
+                    reward -= 1
+                else:
+                    reward -= 2
             done = 0
             emergence_break = 0
             return reward, done, stop, emergence_break
