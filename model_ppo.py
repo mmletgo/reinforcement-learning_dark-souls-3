@@ -172,7 +172,7 @@ class PPO:
                     advantages[i] = last_gae_lambda = delta + self.gamma * 0.95 * last_gae_lambda
             returns = advantages + values
 
-            # normalized_advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+            normalized_advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
             normalized_advantages = advantages
 
         # 使用每个采样的策略和价值网络更新
