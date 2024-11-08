@@ -12,8 +12,14 @@ class PolicyNetwork(nn.Module):
         self.conv1 = nn.Conv2d(1, 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
+        # 增加额外的 MLP 层
         self.fc1 = nn.Linear(64 * 10 * 20, 512)
-        self.action_layer = nn.Linear(512, action_dim)
+        self.fc2 = nn.Linear(512, 256)  # 增加一层
+        self.fc3 = nn.Linear(256, 128)  # 增加另一层
+        # Dropout 层
+        self.dropout = nn.Dropout(p=0.3)
+        # 输出层
+        self.action_layer = nn.Linear(128, action_dim)
         # 初始化最后一层的权重，使输出初始概率接近均等
         nn.init.constant_(self.action_layer.weight, 0.0)  # 将权重初始化为 0
         nn.init.constant_(self.action_layer.bias, 0.0)  # 将偏置初始化为 0
@@ -23,7 +29,13 @@ class PolicyNetwork(nn.Module):
         x = torch.relu(self.conv2(x))
         x = torch.relu(self.conv3(x))
         x = x.view(x.size(0), -1)
+        # 经过 MLP 层和 Dropout
         x = torch.relu(self.fc1(x))
+        x = self.dropout(x)  # 第一个 Dropout
+        x = torch.relu(self.fc2(x))
+        x = self.dropout(x)  # 第二个 Dropout
+        x = torch.relu(self.fc3(x))
+        x = self.dropout(x)  # 第三个 Dropout
         logits = self.action_layer(x)
         logits = logits - logits.max(dim=-1, keepdim=True)[0]  # 归一化，防止数值过大
         action_probs = torch.softmax(logits, dim=-1) + 1e-8  # 增加一个小常数以确保非零
@@ -44,15 +56,26 @@ class ValueNetwork(nn.Module):
         self.conv1 = nn.Conv2d(1, 32, kernel_size=8, stride=4)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1)
+        # 增加额外的 MLP 层
         self.fc1 = nn.Linear(64 * 10 * 20, 512)
-        self.value_layer = nn.Linear(512, 1)
+        self.fc2 = nn.Linear(512, 256)  # 增加一层
+        self.fc3 = nn.Linear(256, 128)  # 增加另一层
+        # Dropout 层
+        self.dropout = nn.Dropout(p=0.3)
+        self.value_layer = nn.Linear(128, 1)
 
     def forward(self, x):
         x = torch.relu(self.conv1(x))
         x = torch.relu(self.conv2(x))
         x = torch.relu(self.conv3(x))
         x = x.view(x.size(0), -1)
+        # 经过 MLP 层和 Dropout
         x = torch.relu(self.fc1(x))
+        x = self.dropout(x)  # 第一个 Dropout
+        x = torch.relu(self.fc2(x))
+        x = self.dropout(x)  # 第二个 Dropout
+        x = torch.relu(self.fc3(x))
+        x = self.dropout(x)  # 第三个 Dropout
         state_value = self.value_layer(x)
         return state_value
 
@@ -119,6 +142,9 @@ class PPO:
         self.rewards = []
 
     def update(self):
+        # 切换到训练模式
+        self.policy_net.train()
+        self.value_net.train()
         with torch.no_grad():
             states_np = np.array(self.states, dtype=np.float32)
             states = torch.tensor(states_np).unsqueeze(1).to(self.device).detach()
