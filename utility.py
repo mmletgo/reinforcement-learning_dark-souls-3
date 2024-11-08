@@ -149,13 +149,13 @@ class gamestatus:
         # emergence_break is used to break down training
         if next_self_blood < 3:  # self dead
             if emergence_break < 2:
-                reward = -1000 + next_self_blood - self_blood
+                reward = (next_self_blood - self_blood)*0.5
                 done = 1
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = -1000 + next_self_blood - self_blood
+                reward = (next_self_blood - self_blood)*0.5
                 done = 1
                 stop = 0
                 emergence_break = 100
@@ -189,7 +189,7 @@ class gamestatus:
                 boss_blood_reward = boss_blood - next_boss_blood
             # print("self_blood_reward:    ",self_blood_reward)
             # print("boss_blood_reward:    ",boss_blood_reward)
-            reward = self_blood_reward + boss_blood_reward * 3
+            reward = self_blood_reward * 0.5 + boss_blood_reward * 3
             if next_boss_blood == boss_blood and action != 0:
                 if action in [1, 2, 3]:
                     reward -= 1
@@ -296,7 +296,7 @@ class gamestatus:
         directkeys.action()
         time.sleep(4 / self.times)
         directkeys.run_forward()
-        time.sleep(5.5 / self.times)
+        time.sleep(5 / self.times)
         directkeys.stop_forward()
         time.sleep(0.2)
         directkeys.reset_camera()

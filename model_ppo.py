@@ -129,9 +129,9 @@ class PPO:
 
             self.writer.add_scalar("Loss/Rewards", rewards.sum().item(), self.update_count)
 
-            max_reward = 200
-            min_reward = -100
-            rewards = (rewards - min_reward) / (max_reward - min_reward)
+            # max_reward = 200
+            # min_reward = -100
+            # rewards = (rewards - min_reward) / (max_reward - min_reward)
 
             values = self.value_net(states).squeeze()
 
@@ -146,7 +146,8 @@ class PPO:
                     advantages[i] = last_gae_lambda = delta + self.gamma * 0.95 * last_gae_lambda
             returns = advantages + values
 
-            normalized_advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+            # normalized_advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+            normalized_advantages = advantages
 
         # 使用每个采样的策略和价值网络更新
         for epoch in range(self.K_epochs):
