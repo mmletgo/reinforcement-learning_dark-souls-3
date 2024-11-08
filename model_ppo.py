@@ -173,7 +173,7 @@ class PPO:
             returns = advantages + values
 
             normalized_advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-            normalized_advantages = advantages
+            # normalized_advantages = advantages
 
         # 使用每个采样的策略和价值网络更新
         for epoch in range(self.K_epochs):
