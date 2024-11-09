@@ -59,7 +59,8 @@ if __name__ == '__main__':
             # get action reward+we
             elapsed_time = time.time() - last_time
             if action != 0:
-                current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                current_time = datetime.datetime.now().strftime(
+                    "%Y-%m-%d %H:%M:%S")
                 print(
                     f'{current_time} - loop took {elapsed_time:.2f} s, action {newgame.action_dict[action]}, self_blood {self_blood}, next_self_blood {next_self_blood}, boss_blood {boss_blood}, next_boss_blood {next_boss_blood}, reward {reward}, done {done}'
                 )

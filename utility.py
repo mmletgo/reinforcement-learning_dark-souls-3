@@ -149,30 +149,30 @@ class gamestatus:
         # emergence_break is used to break down training
         if next_self_blood < 3:  # self dead
             if emergence_break < 2:
-                reward = (next_self_blood - self_blood) * 0.5
+                reward = (next_self_blood - self_blood)
                 done = 1
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = (next_self_blood - self_blood) * 0.5
+                reward = (next_self_blood - self_blood)
                 done = 1
                 stop = 0
                 emergence_break = 100
                 return reward, done, stop, emergence_break
-        elif next_boss_blood < 3:  # boss dead
-            if emergence_break < 2:
-                reward = 2000 + boss_blood - next_boss_blood
-                done = 0
-                stop = 0
-                emergence_break += 1
-                return reward, done, stop, emergence_break
-            else:
-                reward = 2000 + boss_blood - next_boss_blood
-                done = 0
-                stop = 0
-                emergence_break = 100
-                return reward, done, stop, emergence_break
+        elif next_boss_blood < 100:  # boss dead
+            # if emergence_break < 2:
+            #     reward = 2000 + boss_blood - next_boss_blood
+            #     done = 1
+            #     stop = 0
+            #     emergence_break += 1
+            #     return reward, done, stop, emergence_break
+            # else:
+            reward = boss_blood - next_boss_blood
+            done = 1
+            stop = 0
+            # emergence_break = 100
+            return reward, done, stop, emergence_break
         else:
             self_blood_reward = 0
             boss_blood_reward = 0
@@ -189,12 +189,12 @@ class gamestatus:
                 boss_blood_reward = boss_blood - next_boss_blood
             # print("self_blood_reward:    ",self_blood_reward)
             # print("boss_blood_reward:    ",boss_blood_reward)
-            reward = self_blood_reward * 0.5 + boss_blood_reward * 3
+            reward = self_blood_reward + boss_blood_reward
             if next_boss_blood == boss_blood and action != 0:
                 if action in [1, 2, 3]:
-                    reward -= 1
-                else:
                     reward -= 2
+                else:
+                    reward -= 1
             done = 0
             emergence_break = 0
             return reward, done, stop, emergence_break
