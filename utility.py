@@ -149,13 +149,13 @@ class gamestatus:
         # emergence_break is used to break down training
         if next_self_blood < 3:  # self dead
             if emergence_break < 2:
-                reward = (next_self_blood - self_blood)*0.5
+                reward = (next_self_blood - self_blood) * 0.5
                 done = 1
                 stop = 0
                 emergence_break += 1
                 return reward, done, stop, emergence_break
             else:
-                reward = (next_self_blood - self_blood)*0.5
+                reward = (next_self_blood - self_blood) * 0.5
                 done = 1
                 stop = 0
                 emergence_break = 100
@@ -250,6 +250,7 @@ class gamestatus:
     def suicide_restart(self):
         directkeys.teleport_back()
         time.sleep(1)
+        directkeys.left_click()
         directkeys.run_left()
         time.sleep(5 / self.times)
         directkeys.stop_left()
