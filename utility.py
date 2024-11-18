@@ -56,6 +56,7 @@ class gamestatus:
             11: "run_left_roll",
             12: "run_right_roll"
         }
+        self.cooldown_counter = 0
 
     def reset(self):
         self.self_blood = 0
@@ -137,7 +138,6 @@ class gamestatus:
         self_blood = self.self_blood_count(self_screen_color)
         boss_blood = self.boss_blood_count(boss_screen_color)
         self_stamina = self.self_stamina_count(stamina_screen_color)
-        # 确保返回的血量和耐力是标量
         self_blood = float(self_blood)
         self_stamina = float(self_stamina)
         boss_blood = float(boss_blood)
@@ -159,8 +159,8 @@ class gamestatus:
         if self_blood <= self.self_blood or self.self_blood == 0 or self.boss_blood == 0:
             self.self_blood = self_blood
 
-        # Draw rectangles and save annotated image
-        # annotated_image = screen_image_rgb.copy()
+        #Draw rectangles and save annotated image
+        annotated_image = screen_image_rgb.copy()
         # cv2.rectangle(annotated_image,
         #               (self_blood_window[0], self_blood_window[1]),
         #               (self_blood_window[2], self_blood_window[3]),
@@ -197,83 +197,102 @@ class gamestatus:
         status = cv2.resize(screen_gray, (WIDTH, HEIGHT))
         status = np.array(status, dtype=np.float32).reshape(HEIGHT, WIDTH)
         status = status/255.0
+        #print(f"Status shape: {status.shape}")
+        #print('status',status[100])
 
         return status, self.self_blood, self_stamina, self.boss_blood
 
     def action_judge(self, self_blood, next_self_blood, self_stamina, next_self_stamina,
                  boss_blood, next_boss_blood, action, prev_action, stop, emergence_break,
                  in_combo, combo_count):
-        # 设定体力阈值
         high_stamina_threshold = 50
         low_stamina_threshold = 20
 
-        # 判断角色是否死亡
+        if self.cooldown_counter > 0:
+            if action in [1, 3,5,9]:
+                reward = -200
+                done = 0
+                stop = 0
+                emergence_break += 1 if emergence_break < 2 else 100
+                return reward, done, stop, emergence_break, in_combo, combo_count
+            else:
+                self.cooldown_counter -= 1
+                reward = 20 
+                done = 0
+                stop = 0
+                return reward, done, stop, emergence_break, in_combo, combo_count
+
         if next_self_blood < 3:
-            reward = -1000
+            reward = -2000
             done = 1
             stop = 0
             emergence_break += 1 if emergence_break < 2 else 100
-            return reward, done, stop, emergence_break, False, 0  # 重置连击状态
-        # 判断 Boss 是否死亡
+            return reward, done, stop, emergence_break, False, 0
         elif next_boss_blood < 3:
-            reward = 2000
+            reward = 3000
             done = 0
             stop = 0
             emergence_break += 1 if emergence_break < 2 else 100
-            return reward, done, stop, emergence_break, False, 0  # 重置连击状态
+            return reward, done, stop, emergence_break, False, 0
         else:
-            # 初始化奖励
             self_blood_reward = 0
             boss_blood_reward = 0
             action_reward = 0
             stamina_penalty = 0
             idle_penalty = 0
-            combo_reward = 0  # 用于奖励连击
+            combo_reward = 0
 
-            # 计算角色血量变化
             if next_self_blood < self_blood:
-                self_blood_reward = (next_self_blood - self_blood) * 3  # 负值，受到伤害
+                if self_blood>180:
+                    self_blood_reward = (next_self_blood - self_blood) * 3
+                else:
+                    self_blood_reward = (next_self_blood - self_blood) * 4
+                    
+            if next_self_blood - self_blood > -1:
+                self_blood_reward = 20
 
-            # 计算 Boss 血量变化
             boss_damage = boss_blood - next_boss_blood
             if boss_damage > 0:
-                boss_blood_reward = boss_damage * 3  # 正值，给予更多奖励
+                boss_blood_reward = boss_damage * 3
 
-            # 获取当前体力
             current_stamina = next_self_stamina
-
-            # 动作奖励和体力管理
-            if action in [1, 3]:  # 攻击动作
-                if current_stamina > high_stamina_threshold:
-                    action_reward = 20  # 体力充足，鼓励攻击
-                elif current_stamina < low_stamina_threshold:
-                    action_reward = -2  # 体力过低，惩罚攻击
-                else:
-                    action_reward = 0  # 体力一般，不奖励也不惩罚
-            # ... 其他动作奖励代码 ...
-
-            # 组合动作奖励：如果上一个动作是向前翻滚或向前移动，当前动作是攻击，给予额外奖励
-            if prev_action in [5, 9] and action in [1, 3]:
-                combo_reward += 40  # 给予组合动作奖励
-
-            # 连击逻辑
+            
             if in_combo:
                 if action in [1, 3] and boss_damage > 0:
-                    # 连击中继续成功攻击
                     combo_count += 1
-                    combo_reward += 100 * combo_count  # 连击奖励，奖励值可根据需要调整
+                    combo_reward += 40 * combo_count
+                    if combo_count >= 3:
+                        self.cooldown_counter = 1
+                        in_combo = False
+                        combo_count = 0
+                        print("cool down！")
                 else:
-                    # 连击中断
                     in_combo = False
                     combo_count = 0
+
+            if action in [1, 3,9,10,11,12]:
+                if current_stamina > high_stamina_threshold:
+                    action_reward = 10
+                elif current_stamina < low_stamina_threshold:
+                    action_reward = -10
+                else:
+                    action_reward = 0
+
+            if prev_action in [5,7,11,12, 9] and action in [1, 3]:
+                combo_reward += 40
+            
+            if action == 2:
+                action_reward = 20
             else:
                 if action in [1, 3] and boss_damage > 0:
-                    # 开始新的连击
                     in_combo = True
                     combo_count = 1
-                    combo_reward += 10  # 初始连击奖励
+                    combo_reward += 10
+                    
+            if action == 0:
+                reward += -50
+                print("do nothing, punish！")
 
-            # 总奖励计算
             reward = self_blood_reward + boss_blood_reward + action_reward + stamina_penalty + idle_penalty + combo_reward
 
             done = 0
@@ -282,52 +301,53 @@ class gamestatus:
 
 
 
+
     def take_action(self, action):
-        if action == 0:  # n_choose
+        if action == 0: 
             pass
-        elif action == 1:  # 左击
+        elif action == 1: 
             directkeys.left_click()
-        elif action == 2:  # 右击（盾）
+        elif action == 2: 
             directkeys.right_click()
-        elif action == 3:  # 重击
+        elif action == 3: 
             directkeys.heavy_attack_left()
-        elif action == 4:  # 向后闪避，没加翻滚
+        elif action == 4: 
             directkeys.sprint_jump_roll()
-        elif action == 5:  # 往前走w
+        elif action == 5: 
             directkeys.run_forward()
-            time.sleep(3)
+            time.sleep(2)
             directkeys.stop_forward()
-        elif action == 6:  # 往后走s
+        elif action == 6: 
             directkeys.run_backward()
             time.sleep(2)
             directkeys.stop_backward()
-        elif action == 7:  # 往左走a
+        elif action == 7:
             directkeys.run_left()
-            time.sleep(1)
+            time.sleep(0.1)
             directkeys.stop_left()
-        elif action == 8:  # 往右走d
+        elif action == 8: 
             directkeys.run_right()
-            time.sleep(1)
+            time.sleep(0.1)
             directkeys.stop_right()
-        elif action == 9:  # 往前翻滚w
+        elif action == 9:
             directkeys.run_forward()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(0.1)
             directkeys.stop_forward()
-        elif action == 10:  # 往后翻滚s
+        elif action == 10:
             directkeys.run_backward()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(0.1)
             directkeys.stop_backward()
-        elif action == 11:  # 往左翻滚a
+        elif action == 11:
             directkeys.run_left()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(0.1)
             directkeys.stop_left()
-        elif action == 12:  # 往右翻滚d
+        elif action == 12:
             directkeys.run_right()
             directkeys.sprint_jump_roll()
-            time.sleep(1)
+            time.sleep(0.1)
             directkeys.stop_right()
 
     def suicide_restart(self):
@@ -357,7 +377,7 @@ class gamestatus:
             if self_blood > 200 and self_stamina > 100:
                 print('restart ')
                 break
-            if i >= 100:
+            if i >= 70:
                 self.suicide_restart()
                 i = 0
                 continue
@@ -372,8 +392,9 @@ class gamestatus:
         directkeys.action()
         time.sleep(4)
         directkeys.run_forward()
-        time.sleep(5.5)
+        time.sleep(5)
         directkeys.stop_forward()
         time.sleep(0.2)
+        
         directkeys.reset_camera()
         print("restart a new episode")
