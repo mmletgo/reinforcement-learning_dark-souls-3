@@ -2,7 +2,7 @@ def action_judge(boss_blood, next_boss_blood, self_blood, next_self_blood,
                  stop, emergence_break):
     # get action reward
     # emergence_break is used to break down training
-    if next_self_blood < 3:  # self dead
+    if next_self_blood < 1:  # self dead
         if emergence_break < 2:
             reward = -10
             done = 1
@@ -15,7 +15,7 @@ def action_judge(boss_blood, next_boss_blood, self_blood, next_self_blood,
             stop = 0
             emergence_break = 100
             return reward, done, stop, emergence_break
-    elif next_boss_blood - boss_blood > 15:  # boss dead
+    elif next_boss_blood < 1:  # boss dead
         if emergence_break < 2:
             reward = 20
             done = 0
@@ -31,8 +31,8 @@ def action_judge(boss_blood, next_boss_blood, self_blood, next_self_blood,
     else:
         self_blood_reward = 0
         boss_blood_reward = 0
-        # print(next_self_blood - self_blood)
-        # print(next_boss_blood - boss_blood)
+        
+
         if next_self_blood - self_blood < -7:
             if stop == 0:
                 self_blood_reward = -6
@@ -44,7 +44,7 @@ def action_judge(boss_blood, next_boss_blood, self_blood, next_self_blood,
             boss_blood_reward = 4
         # print("self_blood_reward:    ",self_blood_reward)
         # print("boss_blood_reward:    ",boss_blood_reward)
-        reward = self_blood_reward + boss_blood_reward
+        reward = self_blood_reward + boss_blood_reward 
         done = 0
         emergence_break = 0
         return reward, done, stop, emergence_break
