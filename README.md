@@ -1,6 +1,45 @@
-# CS5446_project-reinforcement-learning_dark-souls-3
+# reinforcement-learning_dark-souls-3
+## English
+![image](img/RL_AGENT_FOR_BOSS_BATTLES_IN_DARK_SOULS_III.png)
 
-![image](/img/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%8E%A9%E9%BB%91%E6%9A%97%E4%B9%8B%E9%AD%823.png)
+### directkeys
+
+- Action key mapping
+
+### find_blood_location
+
+- Tool code, used to find the pixel position of the blood bar and image
+
+### colorselect
+
+- Tool code, used to find the pixel color information of the blood bar
+
+### getkeys
+
+- Tool, used to get the manually pressed key position
+
+### grabscreen
+
+- Tool, used to capture the screen image
+
+### utility
+
+- Tool function, blood volume calculation, action execution, game pause
+
+- Reward function
+- Handle the pre-process of restarting the boss after each player's death
+
+### setting
+
+- Settings for directory, pixel coordinates, action space, etc.
+
+
+### train_ppo
+
+- Model training code
+
+## 中文
+![image](img/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%8E%A9%E9%BB%91%E6%9A%97%E4%B9%8B%E9%AD%823.png)
 
 ### directkeys
 
@@ -9,6 +48,10 @@
 ### find_blood_location
 
     - 工具代码，用来找血条和图像的像素位置
+
+### colorselect
+
+    - 工具代码，用来找血条的像素颜色信息
 
 ### getkeys
 
@@ -21,27 +64,14 @@
 ### utility
 
     - 工具函数，血量计算，动作执行，游戏暂停
+    - 奖励函数
+    - 处理每次玩家死亡后的重新开始打BOSS的前置流程
 
 ### setting
 
     - 目录，像素坐标，动作空间等的设置
 
-### model
-
-    - RL模型
-
-### resart
-
-    - 用来处理每次玩家死亡后的重新开始打BOSS的前置流程
-
-### reward_fc
-
-    - 奖励函数
-
-### training
+### train_ppo
 
     - 模型训练代码
 
-### testing
-
-    - 模型测试代码

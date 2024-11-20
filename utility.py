@@ -290,7 +290,7 @@ class gamestatus:
                     combo_reward += 10
                     
             if action == 0:
-                reward += -50
+                action_reward += -50
                 print("do nothing, punish！")
 
             reward = self_blood_reward + boss_blood_reward + action_reward + stamina_penalty + idle_penalty + combo_reward

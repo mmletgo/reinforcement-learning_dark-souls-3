@@ -10,6 +10,65 @@ import torch
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.monitor import Monitor    
 
+import csv
+
+class LossLoggingCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super(LossLoggingCallback, self).__init__(verbose)
+        self.log_file = open('training_metrics.csv', 'w')
+        self.log_file.write('timesteps,total_reward,loss,value_loss,policy_loss,entropy_loss\n')
+        
+    def _on_step(self) -> bool:
+        return True
+
+    def _on_rollout_end(self):
+        logs = self.logger.name_to_value
+        timesteps = self.num_timesteps
+        loss = logs.get('train/loss', None)
+        value_loss = logs.get('train/value_loss', None)
+        policy_loss = logs.get('train/policy_loss', None)
+        entropy_loss = logs.get('train/entropy_loss', None)
+        self.log_file.write(f'{timesteps},,{loss},{value_loss},{policy_loss},{entropy_loss}\n')
+        self.log_file.flush()
+        
+    def _on_training_end(self):
+        self.log_file.close()
+
+class StepLoggingCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super(StepLoggingCallback, self).__init__(verbose)
+        self.log_file = open('step_data.csv', 'w', newline='')
+        self.csv_writer = csv.writer(self.log_file)
+        self.csv_writer.writerow(['timesteps', 'episode', 'reward', 'action', 'done', 'observation_mean', 'loss'])
+        self.episode_num = 0
+
+    def _on_step(self) -> bool:
+        timesteps = self.num_timesteps
+        infos = self.locals.get('infos', [{}])
+        rewards = self.locals.get('rewards', [0])
+        dones = self.locals.get('dones', [False])
+        actions = self.locals.get('actions', [None])
+        observations = self.locals.get('new_obs', [None])
+
+        reward = rewards[0]
+        done = dones[0]
+        action = actions[0]
+        observation = observations[0]
+        observation_mean = np.mean(observation) if observation is not None else None
+
+        logs = self.logger.name_to_value
+        loss = logs.get('train/loss', None)
+
+        self.csv_writer.writerow([timesteps, self.episode_num, reward, action, done, observation_mean, loss])
+
+        if done:
+            self.episode_num += 1
+
+        return True
+
+    def _on_training_end(self):
+        self.log_file.close()
+
 class StepPrintCallback(BaseCallback):
     def __init__(self, verbose=0):
         super(StepPrintCallback, self).__init__(verbose)
@@ -113,7 +172,7 @@ def main():
             verbose=1,
             tensorboard_log="./ppo_darksouls_tensorboard/",
             learning_rate=1e-4,
-            n_steps=9600,
+            n_steps=64,
             batch_size=64,
             gamma=0.99,
             gae_lambda=0.95,
@@ -124,15 +183,18 @@ def main():
         )
         print("No checkpoint found. Starting training from scratch.")
 
-    checkpoint_callback = CheckpointCallback(save_freq=100, save_path=checkpoint_dir,
+    checkpoint_callback = CheckpointCallback(save_freq=500, save_path=checkpoint_dir,
                                              name_prefix='ppo_darksouls')
     progress_bar_callback = TQDMProgressBarCallback(total_timesteps=1000000)
     step_print_callback = StepPrintCallback()
     boss_health_callback = BossHealthMonitorCallback(threshold=20, consecutive_steps=10, save_path=checkpoint_dir)
+    loss_logging_callback = LossLoggingCallback()
+    step_logging_callback = StepLoggingCallback()
+
 
     print("Starting or resuming model training...")
     model.learn(total_timesteps=1000000, tb_log_name="ppo_darksouls",
-                callback=[checkpoint_callback, progress_bar_callback, step_print_callback, boss_health_callback])
+                callback=[checkpoint_callback, progress_bar_callback, step_print_callback, boss_health_callback,loss_logging_callback,step_logging_callback  ])
     print("Training completed.")
     model.save("ppo_darksouls_boss")
     print("Model saved as 'ppo_darksouls_boss'.")
