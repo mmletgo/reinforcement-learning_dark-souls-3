@@ -200,48 +200,48 @@ class gamestatus:
             return reward, done, stop, emergence_break
 
     def take_action(self, action):
-        if action == 0:  # n_choose
+        if action == 0:  # do nothing
             pass
-        elif action == 1:  # 左击
+        elif action == 1:
             directkeys.left_click()
-        elif action == 2:  # 右击（盾）
+        elif action == 2:
             directkeys.right_click()
-        elif action == 3:  # 重击
+        elif action == 3:
             directkeys.heavy_attack_left()
-        elif action == 4:  # 向后闪避，没加翻滚
+        elif action == 4:
             directkeys.sprint_jump_roll()
-        elif action == 5:  # 往前走w
+        elif action == 5:
             directkeys.run_forward()
             time.sleep(1 / self.times)
             directkeys.stop_forward()
-        elif action == 6:  # 往后走s
+        elif action == 6:
             directkeys.run_backward()
             time.sleep(1 / self.times)
             directkeys.stop_backward()
-        elif action == 7:  # 往左走a
+        elif action == 7:
             directkeys.run_left()
             time.sleep(1 / self.times)
             directkeys.stop_left()
-        elif action == 8:  # 往右走d
+        elif action == 8:
             directkeys.run_right()
             time.sleep(1 / self.times)
             directkeys.stop_right()
-        elif action == 9:  # 往前翻滚w
+        elif action == 9:
             directkeys.run_forward()
             directkeys.sprint_jump_roll()
             time.sleep(1 / self.times)
             directkeys.stop_forward()
-        elif action == 10:  # 往后翻滚s
+        elif action == 10:
             directkeys.run_backward()
             directkeys.sprint_jump_roll()
             time.sleep(1 / self.times)
             directkeys.stop_backward()
-        elif action == 11:  # 往左翻滚a
+        elif action == 11:
             directkeys.run_left()
             directkeys.sprint_jump_roll()
             time.sleep(1 / self.times)
             directkeys.stop_left()
-        elif action == 12:  # 往右翻滚d
+        elif action == 12:
             directkeys.run_right()
             directkeys.sprint_jump_roll()
             time.sleep(1 / self.times)
