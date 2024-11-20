@@ -2,46 +2,50 @@
 
 ![image](/img/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%8E%A9%E9%BB%91%E6%9A%97%E4%B9%8B%E9%AD%823.png)
 
-### directkeys
+This branch focuses on applying DQN approach to automate gameplay in Dark Souls 3. It leverages various code modules designed to facilitate actions such as game control, health monitoring, and model training.
 
-    - 动作键位映射
+## Directory Structure
 
-### find_blood_location
+### directkeys_dark3.py
 
-    - 工具代码，用来找血条和图像的像素位置
+    - Defines key mappings and action controls for the game
+
+### find_blood_location.py
+
+    - A utility to measure the health of the agent and the boss based on pixel calculations in the screen images.
 
 ### getkeys
 
     - 工具，用来获取人工按下的键位
 
-### grabscreen
+### grabscreen.py
 
-    - 工具，用来截取屏幕图像
+    - Captures screenshots to provide initial image inputs for the model.
 
 ### utility
 
     - 工具函数，血量计算，动作执行，游戏暂停
 
-### setting
+### setting.py
 
-    - 目录，像素坐标，动作空间等的设置
+    - Configures parameters related to the screenshot window and the action space size.
 
-### model
+### model_dqn1.py
 
-    - RL模型
+    - Contains the definition and hyperparameter configurations of the DQN model used in the reinforcement learning process.
 
-### resart
+### resart.py
 
-    - 用来处理每次玩家死亡后的重新开始打BOSS的前置流程
+    - An auxiliary script that facilitates quick resets of the training process after the agent's death.
 
-### reward_fc
+### reward_fc.py
 
-    - 奖励函数
+    - Defines the reward function which is critical for training the agent.
 
-### training
+### training.py
 
-    - 模型训练代码
+    - Outlines the complete training process for the reinforcement learning model.
 
-### testing
+### testing.py
 
-    - 模型测试代码
+    - Defines the testing process for the model, without involving parameter updates.
