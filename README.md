@@ -3,6 +3,7 @@
 ![image](/img/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%8E%A9%E9%BB%91%E6%9A%97%E4%B9%8B%E9%AD%823.png)
 
 This branch focuses on applying DQN approach to automate gameplay in Dark Souls 3. It leverages various code modules designed to facilitate actions such as game control, health monitoring, and model training.
+
 本分支专注于应用 DQN 方法来实现《黑暗之魂 3》游戏玩法的自动化。它利用各种代码模块来促进游戏控制、健康监测和模型训练等操作。
 
 ## Directory Structure
