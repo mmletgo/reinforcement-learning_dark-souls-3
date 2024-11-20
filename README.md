@@ -1,6 +1,6 @@
 # reinforcement-learning_dark-souls-3
 ## English
-![image](img/RL AGENT FOR BOSS BATTLES IN DARK SOULS III.png)
+![image](img/RL_AGENT_FOR_BOSS_BATTLES_IN_DARK_SOULS_III.png)
 
 ### directkeys
 
