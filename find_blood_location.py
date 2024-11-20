@@ -12,7 +12,7 @@ def calculate_health_percentage(color_image, label, red_threshold=150, green_blu
     blue_channel = color_image[4, :, 0] 
 
     self_blood = 0
-    for pixel in color_image[4]:
+    for pixel in color_image[-1]:
         red_value = pixel[2]
         green_value = pixel[1]
         blue_value = pixel[0]
@@ -36,7 +36,7 @@ def calculate_self_blood(color_image, label, red_self_blood_threshold=80,green_s
     # print(f"Label: {label} - Green channel matrix:\n", green_channel)
     #print(f"Label: {label} - Blue channel matrix:\n", blue_channel)
     self_blood = 0
-    for pixel in color_image[4]:
+    for pixel in color_image[-1]:
         red_value = pixel[2]
         green_value = pixel[1]
         blue_value = pixel[0]
@@ -48,9 +48,9 @@ def calculate_self_blood(color_image, label, red_self_blood_threshold=80,green_s
 
     return health_percentage
 
-def calculate_boss_blood(color_image, label, red_boss_blood_threshold=70, self_stamina_green=30, self_stamina_blue=30):
+def calculate_boss_blood(color_image, label, red_boss_blood_threshold=40, self_stamina_green=30, self_stamina_blue=30):
     self_blood = 0
-    for pixel in color_image[4]:
+    for pixel in color_image[-1]:
         red_value = pixel[2]
         green_value = pixel[1]
         blue_value = pixel[0]
@@ -65,7 +65,7 @@ def calculate_boss_blood(color_image, label, red_boss_blood_threshold=70, self_s
 
 def calculate_self_stamina(color_image, label, self_stamina_red=80, self_stamina_green=110, self_stamina_blue=80):
     self_blood = 0
-    for pixel in color_image[4]:
+    for pixel in color_image[-1]:
         red_value = pixel[2]
         green_value = pixel[1]
         blue_value = pixel[0]
@@ -90,10 +90,14 @@ def print_text_on_image(image, text, position, color=(0, 255, 255), font_scale=1
 wait_time = 1
 L_t = 3
 
-window_size = (0, 0, 1920, 1080)  # 全屏
-boss_blood_window = (557, 899, 1557, 910)  # Boss 血条区域
-self_blood_window = (197, 75, 453, 89)  # 玩家血条区域
-self_stamina_window = (197, 109, 419, 123)  # 玩家体力条区域
+
+# wanghao
+window_size = (0, 0, 1440, 810)  # 左上角
+boss_blood_window = (420, 708, 1168, 712)  # Boss 血条区域
+self_blood_window = (149, 91, 342, 97)  # 玩家血条区域
+self_blood_window = (149, 91, 510, 97)  # 玩家血条区域修改器
+
+self_stamina_window = (149, 115, 315, 123)  # 玩家体力条区域
 
 for i in list(range(wait_time))[::-1]:
     print(i + 1)
@@ -101,6 +105,25 @@ for i in list(range(wait_time))[::-1]:
 
 last_time = time.time()
 
+if __name__ == '__main__':
+    time.sleep(5)
+    screen_shot = grabscreen.grab_screen(window_size)
+    self_screen_color = screen_shot[self_blood_window[1]:self_blood_window[3], self_blood_window[0]:self_blood_window[2]]
+    boss_screen_color = screen_shot[boss_blood_window[1]:boss_blood_window[3], boss_blood_window[0]:boss_blood_window[2]]
+    stamina_screen_color = screen_shot[self_stamina_window[1]:self_stamina_window[3], self_stamina_window[0]:self_stamina_window[2]]
+
+    self_blood = calculate_self_blood(self_screen_color, image_counter)
+    boss_blood = calculate_boss_blood(boss_screen_color, image_counter)
+    self_stamina = calculate_self_stamina(stamina_screen_color, image_counter)
+    print(f"Player blood: {self_blood:.2f}% | Boss blood: {boss_blood:.2f}% | Stamina: {self_stamina:.2f}%")
+
+    draw_bounding_box(screen_shot, (self_blood_window[0], self_blood_window[1]), (self_blood_window[2], self_blood_window[3]))
+    draw_bounding_box(screen_shot, (boss_blood_window[0], boss_blood_window[1]), (boss_blood_window[2], boss_blood_window[3]))
+    draw_bounding_box(screen_shot, (self_stamina_window[0], self_stamina_window[1]), (self_stamina_window[2], self_stamina_window[3]))
+    station = cv2.resize(screen_shot, (96, 88))
+    cv2.imwrite(f"processed_screen_{image_counter}.png", station)
+    cv2.imshow('Processed Image', station)
+'''
 while True:
     # 获取屏幕截图
     screen_image = grabscreen.grab_screen(window_size)
@@ -141,3 +164,4 @@ while True:
 # 视频结束后按任意键退出
 cv2.waitKey()
 cv2.destroyAllWindows()
+'''
